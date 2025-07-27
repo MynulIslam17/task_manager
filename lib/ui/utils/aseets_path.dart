@@ -14,6 +14,8 @@ class AssetsPath {
   static const String galleryImage="$_imagePath/gallery.png";
   static const String cameraImage="$_imagePath/add-picture.png";
   static const String userDefaultDp="$_imagePath/user.png";
+  static const String  appNameImage="$_imagePath/appName.png";
+  static const String  taskLogo="$_imagePath/taskLogo2.png";
 
 
 

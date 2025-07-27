@@ -31,11 +31,11 @@ class SplashScreen extends StatefulWidget {
 
      bool currentUser=await AuthController.isLogedIn();
 
-     if(currentUser){
-       Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
-     }else{
-       Navigator.pushReplacementNamed(context, SignInScreen.name);
-     }
+     // if(currentUser){
+     //   Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
+     // }else{
+     //   Navigator.pushReplacementNamed(context, SignInScreen.name);
+     // }
 
 
     }
@@ -53,8 +53,27 @@ class SplashScreen extends StatefulWidget {
     Widget build(BuildContext context) {
       return Scaffold(
 
-        body:ScreenBackground(child: Center(child: SvgPicture.asset(AssetsPath.logo)))
+       body:ScreenBackground(child:
+          SingleChildScrollView(
+            child: Center(
+              child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
 
+
+                Image.asset(AssetsPath.taskLogo),
+                Image.asset(AssetsPath.appNameImage)
+
+
+              ],
+
+                     ),
+            ),
+          )
+       
+       ),
+          
       );
     }
   }
