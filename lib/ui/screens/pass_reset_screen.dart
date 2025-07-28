@@ -187,6 +187,7 @@ class PassResetScreen extends StatefulWidget {
           return ;
         }
 
+
         setState(() {
           _passwordResetProgress=false;
         });
@@ -194,15 +195,20 @@ class PassResetScreen extends StatefulWidget {
         if(response.success){
 
           final String  data=response.body?["data"];
-          showSnackbarMesssage(context, data);
+          if(mounted){
+            showSnackbarMesssage(context, data);
+          }
+
 
           _confirmPassTEController.clear();
           _passTEController.clear();
 
 
         }else{
+            if(mounted){
+              showSnackbarMesssage(context, response.errorMsg!);
+            }
 
-          showSnackbarMesssage(context, response.errorMsg!);
         }
 
 
@@ -218,6 +224,14 @@ class PassResetScreen extends StatefulWidget {
       Navigator.pushNamedAndRemoveUntil(context, SignInScreen.name, (predicate)=>false);
 
     }
+
+    @override
+  void dispose() {
+    // TODO: implement dispose
+      _passTEController.dispose();
+      _confirmPassTEController.dispose();
+    super.dispose();
+  }
 
 
   }

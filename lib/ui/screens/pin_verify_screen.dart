@@ -7,6 +7,7 @@ import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/pass_reset_screen.dart';
 import 'package:task_manager1/ui/screens/sign_in_screen.dart';
+import 'package:task_manager1/ui/screens/sign_up_screen.dart';
 import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/rich_text.dart';
 import 'package:task_manager1/ui/widgets/screen_background.dart';
@@ -154,7 +155,7 @@ class PinVerifyScreen extends StatefulWidget {
 
      _pinVerifyProgress=true;
 
-      NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.verifyPinUrl(widget.email, _otpTEController.text));
+      NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.verifyPinUrl(widget.email,otpString));
 
       if(!mounted){
         return;
@@ -166,9 +167,8 @@ class PinVerifyScreen extends StatefulWidget {
 
        if(response.success){
          final String data=response.body?["data"];
-        showSnackbarMesssage(context, data);
 
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>PassResetScreen(email: widget.email,otp: _otpTEController.text,)));
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>PassResetScreen(email: widget.email,otp: otpString,message: data,)));
 
        }else{
          showSnackbarMesssage(context, response.errorMsg!);
@@ -179,14 +179,14 @@ class PinVerifyScreen extends StatefulWidget {
 
     void _tapSignIn(){
 
-     Navigator.pushNamedAndRemoveUntil(context, SignInScreen.name, (predicate)=>false);
+     Navigator.pushNamedAndRemoveUntil(context, SignUpScreen.name, (predicate)=>false);
 
     }
 
   @override
   void dispose() {
     // TODO: implement dispose
-    _otpTEController.dispose();
+
     super.dispose();
   }
 
