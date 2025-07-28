@@ -31,11 +31,11 @@ class SplashScreen extends StatefulWidget {
 
      bool currentUser=await AuthController.isLogedIn();
 
-     // if(currentUser){
-     //   Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
-     // }else{
-     //   Navigator.pushReplacementNamed(context, SignInScreen.name);
-     // }
+     if(currentUser){
+       Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
+     }else{
+       Navigator.pushReplacementNamed(context, SignInScreen.name);
+     }
 
 
     }

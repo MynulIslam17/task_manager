@@ -1,16 +1,28 @@
 
   import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:task_manager1/data/service/network_caller.dart';
+import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/sign_in_screen.dart';
+import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/password_field.dart';
 import 'package:task_manager1/ui/widgets/rich_text.dart';
 import 'package:task_manager1/ui/widgets/screen_background.dart';
+import 'package:task_manager1/ui/widgets/snackbar.dart';
 
 class PassResetScreen extends StatefulWidget {
 
   static const String name="/pass_reset_screen";
 
-    const PassResetScreen({super.key});
+  final String email;
+  final String otp;
+  final String ? message;
+
+    const PassResetScreen({super.key,
+    required this.email,
+      required this.otp,
+      this.message
+    });
 
     @override
     State<PassResetScreen> createState() => _PassResetScreenState();
@@ -20,12 +32,32 @@ class PassResetScreen extends StatefulWidget {
 
 
 
+  @override
+  void initState() {
+    // TODO: implement initState
+
+    WidgetsBinding.instance.addPostFrameCallback((_){
+
+      if(widget.message!=null && widget.message!.isNotEmpty){
+        showSnackbarMesssage(context, widget.message!);
+      }
+
+    });
+
+    super.initState();
+  }
+
+
   final TextEditingController _passTEController=TextEditingController();
   final TextEditingController _confirmPassTEController=TextEditingController();
   final _formKey= GlobalKey<FormState>();
 
   bool _obSecureText1=true;
   bool _obSecureText2=true;
+
+
+  bool _passwordResetProgress=false;
+
 
     @override
     Widget build(BuildContext context) {
@@ -92,9 +124,13 @@ class PassResetScreen extends StatefulWidget {
 
                       const SizedBox(height: 20,),
 
-                      ElevatedButton(
-                          onPressed: _passConfirm,
-                          child: Text("Confirm")
+                      Visibility(
+                        visible: _passwordResetProgress==false,
+                        replacement: CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                            onPressed: _passConfirm,
+                            child: Text("Confirm")
+                        ),
                       ),
 
                       const SizedBox(height: 25,),
@@ -132,11 +168,46 @@ class PassResetScreen extends StatefulWidget {
       });
   }
 
-    void _passConfirm(){
+    void _passConfirm() async{
 
       if(_formKey.currentState!.validate()){
 
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Pass change")));
+        setState(() {
+          _passwordResetProgress=true;
+        });
+
+        Map<String,dynamic> passInfo={
+          "email":widget.email,
+          "OTP":widget.otp,
+          "password":_confirmPassTEController.text
+        };
+
+        NetworkResponse response=await NetworkCaller.postRequest(url: ApiUrls.passResetUrl,body: passInfo);
+        if(!mounted){
+          return ;
+        }
+
+        setState(() {
+          _passwordResetProgress=false;
+        });
+
+        if(response.success){
+
+          final String  data=response.body?["data"];
+          showSnackbarMesssage(context, data);
+
+          _confirmPassTEController.clear();
+          _passTEController.clear();
+
+
+        }else{
+
+          showSnackbarMesssage(context, response.errorMsg!);
+        }
+
+
+
+
       }
 
     }

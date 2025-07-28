@@ -212,13 +212,19 @@ class SignInScreen extends StatefulWidget {
 
            await AuthController.saveDataAndToken(token, model);
 
+           if(!mounted){
+             return;
+           }
            Navigator.pushNamedAndRemoveUntil(context, MainNavBarHolderScreen.name,(predicate)=>false);
 
 
          }else{
 
-            showSnackbarMesssage(context, response.errorMsg!);
-          // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.errorMsg!)));
+              if(mounted){
+                showSnackbarMesssage(context, response.errorMsg!);
+              }
+
+
          }
 
        }

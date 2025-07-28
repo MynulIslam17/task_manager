@@ -1,5 +1,6 @@
 
    import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/task_card.dart';
 
@@ -36,7 +37,8 @@ class ProgressTaskListScreen extends StatefulWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: CenteredCircularProgressIndicator(),
         ),
-        child: ListView.builder(itemBuilder: (context,index){
+        child:(progressTaskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
+            : ListView.builder(itemBuilder: (context,index){
           TaskModel task=progressTaskList[index];
         return TaskCard(task: task, taskType: TaskCategory.Progress,
         onStatusUpdate: _progressTaskRetrieve,

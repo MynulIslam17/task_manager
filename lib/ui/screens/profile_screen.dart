@@ -80,10 +80,11 @@ class ProfileScreen extends StatefulWidget {
 
                             CircleAvatar(
                               radius: 60,
-                             backgroundImage: (_selectedImage!=null) ? FileImage(_selectedImage!)
-                                 : AuthController.userModel?.photo == null ? null
-                                : MemoryImage(base64Decode(AuthController.userModel!.photo !)),
-
+                             backgroundImage: (_selectedImage != null)
+                                 ? FileImage(_selectedImage!)
+                                 : (AuthController.userModel?.photo == null || AuthController.userModel!.photo!.isEmpty)
+                                 ?  const AssetImage(AssetsPath.userDefaultDp)
+                                 : MemoryImage(base64Decode(AuthController.userModel!.photo!)),
 
 
                               backgroundColor: Colors.white,

@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
+import 'package:task_manager1/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/password_field.dart';
 import 'package:task_manager1/ui/widgets/screen_background.dart';
@@ -249,6 +250,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
            if(response.success){
              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Resgistration  completed")));
+
              _emailTEController.clear();
              _fNameTEController.clear();
              _lNameTEController.clear();

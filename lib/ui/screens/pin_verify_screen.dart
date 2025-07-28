@@ -3,16 +3,28 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:task_manager1/data/service/network_caller.dart';
+import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/pass_reset_screen.dart';
 import 'package:task_manager1/ui/screens/sign_in_screen.dart';
+import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/rich_text.dart';
 import 'package:task_manager1/ui/widgets/screen_background.dart';
+import 'package:task_manager1/ui/widgets/snackbar.dart';
 
 class PinVerifyScreen extends StatefulWidget {
 
   static const String name="/pin_match_screen";
 
-    const PinVerifyScreen({super.key});
+     final String email;
+     final String ? message;
+
+
+    const PinVerifyScreen({super.key,
+      required this.email,
+       this.message
+
+    });
 
     @override
     State<PinVerifyScreen> createState() => _PinVerifyScreenState();
@@ -22,7 +34,25 @@ class PinVerifyScreen extends StatefulWidget {
 
 
 
-    TextEditingController _otpTEController=TextEditingController();
+    @override
+  void initState() {
+    // TODO: implement initState
+      WidgetsBinding.instance.addPostFrameCallback((_){
+
+        if(widget.message!=null && widget.message!.isNotEmpty){
+         showSnackbarMesssage(context, widget.message!);
+        }
+
+
+      });
+
+    super.initState();
+  }
+
+    bool _pinVerifyProgress=false;
+
+
+   final TextEditingController _otpTEController=TextEditingController();
 
 
     @override
@@ -72,10 +102,14 @@ class PinVerifyScreen extends StatefulWidget {
                         height: 20,
                     ),
               
-                    ElevatedButton(
-                        onPressed: _verifyButton,
-                        child: Text("Verify")
-              
+                    Visibility(
+                      visible: _pinVerifyProgress==false,
+                       replacement: CenteredCircularProgressIndicator(),
+                      child: ElevatedButton(
+                          onPressed: _verifyButton,
+                          child: Text("Verify")
+
+                      ),
                     ),
               
                     const SizedBox(
@@ -107,11 +141,38 @@ class PinVerifyScreen extends StatefulWidget {
 
 
 
-    void _verifyButton(){
+    void _verifyButton() async{
 
-      // validate code with send code then go the pass change screen
-      
-      Navigator.push(context, MaterialPageRoute(builder: (context)=>PassResetScreen()));
+
+     // if every field is filled then execute
+      String otpString=_otpTEController.text.trim();
+
+      if(otpString.length!=6){
+        showSnackbarMesssage(context, "Please enter the 6-digit OTP");
+        return;
+      } // if not true then below code will not execute
+
+     _pinVerifyProgress=true;
+
+      NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.verifyPinUrl(widget.email, _otpTEController.text));
+
+      if(!mounted){
+        return;
+      }
+
+      setState(() {
+        _pinVerifyProgress=false;
+      });
+
+       if(response.success){
+         final String data=response.body?["data"];
+        showSnackbarMesssage(context, data);
+
+        Navigator.push(context, MaterialPageRoute(builder: (context)=>PassResetScreen(email: widget.email,otp: _otpTEController.text,)));
+
+       }else{
+         showSnackbarMesssage(context, response.errorMsg!);
+       }
 
 
     }

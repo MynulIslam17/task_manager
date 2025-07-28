@@ -13,9 +13,13 @@
    static const String  progressTaskListUrl="$_baseUrl/listTaskByStatus/Progress";
    static const String  taskCountUrl="$_baseUrl/taskStatusCount";
    static const String  profileUpdateUrl="$_baseUrl/ProfileUpdate";
+
+
    static  String updateTaskStatusUrl ({required String id, required String status}) => "$_baseUrl/updateTaskStatus/$id/$status" ;
 
-
+  static String verifyEmailUrl(String email)=> "$_baseUrl/RecoverVerifyEmail/$email";
+  static String verifyPinUrl(String email,String otp) =>"$_baseUrl/RecoverVerifyOtp/$email/$otp";
+  static const passResetUrl="$_baseUrl/RecoverResetPassword";
 
 
   }

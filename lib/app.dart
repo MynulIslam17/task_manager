@@ -101,8 +101,8 @@ class TaskManger extends StatelessWidget{
         SignInScreen.name : (context)=> SignInScreen(),
         SignUpScreen.name : (context)=>SignUpScreen(),
         VerifyEmailScreen.name : (context)=> VerifyEmailScreen(),
-        PinVerifyScreen.name : (context)=>PinVerifyScreen(),
-        PassResetScreen.name : (context)=> PassResetScreen(),
+       //  PinVerifyScreen.name : (context)=>PinVerifyScreen(),
+       // PassResetScreen.name : (context)=> PassResetScreen(),
         MainNavBarHolderScreen.name : (context)=>MainNavBarHolderScreen(),
         AddNewTaskScreen.name : (context)=>AddNewTaskScreen(),
         ProfileScreen.name : (context)=>ProfileScreen()

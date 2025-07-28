@@ -1,4 +1,5 @@
    import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:task_manager1/data/models/task_model.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
@@ -34,7 +35,8 @@ class CanceledTaskListScreen extends StatefulWidget {
            padding: const EdgeInsets.symmetric(vertical: 10),
            child: CenteredCircularProgressIndicator(),
          ),
-         child: ListView.builder(itemBuilder: (context,index){
+         child:(canceledTaskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
+             : ListView.builder(itemBuilder: (context,index){
           TaskModel task= canceledTaskList[index];
            return TaskCard(task: task, taskType: TaskCategory.Canceled,
              onStatusUpdate: (){
