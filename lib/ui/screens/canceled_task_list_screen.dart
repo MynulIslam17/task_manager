@@ -43,6 +43,12 @@ class CanceledTaskListScreen extends StatefulWidget {
              _canceledTaskRetrieve();
              },
 
+             onDeleteTask: ()async{
+
+             await _canceledTaskRetrieve();
+
+             },
+
            );
          },
            itemCount: canceledTaskList.length,

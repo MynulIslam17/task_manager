@@ -115,6 +115,11 @@ class NewTaskScreen extends StatefulWidget {
                           _retrieveTaskCount();
 
                         },
+
+                      onDeleteTask: ()async{
+                        await  _retrieveNewTask();
+                        await  _retrieveTaskCount();
+                      },
                     );
                   },
                     itemCount: taskList.length,

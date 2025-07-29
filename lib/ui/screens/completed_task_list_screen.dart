@@ -51,6 +51,11 @@ class CompletedTaskListScreen extends StatefulWidget {
         onStatusUpdate: (){
           _retrieveCompletedTask();
         },
+          onDeleteTask: ()async{
+           await _retrieveCompletedTask();
+          },
+
+
         );
 
 

@@ -21,5 +21,7 @@
   static String verifyPinUrl(String email,String otp) =>"$_baseUrl/RecoverVerifyOtp/$email/$otp";
   static const passResetUrl="$_baseUrl/RecoverResetPassword";
 
+  static  String deleteTaskUrl(String id) => "$_baseUrl/deleteTask/$id";
+
 
   }

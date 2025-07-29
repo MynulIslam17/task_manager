@@ -40,8 +40,16 @@ class ProgressTaskListScreen extends StatefulWidget {
         child:(progressTaskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
             : ListView.builder(itemBuilder: (context,index){
           TaskModel task=progressTaskList[index];
-        return TaskCard(task: task, taskType: TaskCategory.Progress,
+        return TaskCard(
+          task: task,
+          taskType: TaskCategory.Progress,
         onStatusUpdate: _progressTaskRetrieve,
+
+          onDeleteTask: () async {
+           await _progressTaskRetrieve();
+          },
+
+
         );
         },
           itemCount: progressTaskList.length,

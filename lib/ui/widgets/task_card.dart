@@ -16,6 +16,7 @@ class TaskCard extends StatefulWidget {
   final TaskCategory taskType;
    final TaskModel task;
    final VoidCallback onStatusUpdate;
+   final VoidCallback onDeleteTask;
 
 
 
@@ -23,7 +24,8 @@ class TaskCard extends StatefulWidget {
     super.key,
     required this.task,
     required this.taskType,
-    required this.onStatusUpdate
+    required this.onStatusUpdate,
+    required this.onDeleteTask
 
 
   });
@@ -35,6 +37,7 @@ class TaskCard extends StatefulWidget {
 class _TaskCardState extends State<TaskCard> {
 
   bool _statusChangeProgress=false;
+
 
 
   @override
@@ -278,96 +281,119 @@ class _TaskCardState extends State<TaskCard> {
 
 
   // show dialog when delete task
-  void _deleteTaskBtn(BuildContext context){
+  void _deleteTaskBtn(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        bool isDeleting = false;
 
-
-    showDialog(context: context, builder: (context){
-
-
-       return AlertDialog(
-         title: Row(
-           children: [
-             Icon(Icons.dangerous,color: Colors.red,),
-             const SizedBox(width: 4,),
-
-             Text("Confirm delete ",style: TextStyle(fontSize: 17),),
-
-
-           ],
-         ),
-         content: Column(
-           mainAxisSize: MainAxisSize.min,
-           children: [
-
-             Divider(
-               thickness:1 ,
-               color: Colors.black.withOpacity(0.1),
-             ),
-
-             Text("Are you sure you want to delete this task ?"),
-
-             const SizedBox(height: 20,),
-
-             Divider(
-               color: Colors.black.withOpacity(0.1),
-             )
-
-
-
-           ],
-
-
-         ),
-         actions: [
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-
-
-              ElevatedButton(
-                onPressed: (){
-                  _cancelDialogBtn(context);
-                },
-                child: Text("Cancel"),
-                style: ElevatedButton.styleFrom(
-                    fixedSize: Size.fromWidth(100),
-                    backgroundColor: Colors.blue
-                ),
-
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Row(
+                children: const [
+                  Icon(Icons.dangerous, color: Colors.red),
+                  SizedBox(width: 4),
+                  Text("Confirm delete", style: TextStyle(fontSize: 17)),
+                ],
               ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Divider(thickness: 1, color: Colors.black.withOpacity(0.1)),
+                  const Text("Are you sure you want to delete this task?"),
+                  const SizedBox(height: 20),
+                  Divider(color: Colors.black.withOpacity(0.1)),
 
-              ElevatedButton(onPressed: (){},
-                child: Text("Delete task"),
-                style: ElevatedButton.styleFrom(
-                    fixedSize: Size.fromWidth(120),
-                  backgroundColor: Colors.red
-                ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+
+                      ElevatedButton(
+                          onPressed: (){
+                            Navigator.pop(context);
+                          },
+
+                          child: Text("Cancel"),
+                        style: ElevatedButton.styleFrom(
+                          fixedSize: Size(120, 40),
+                          backgroundColor: Colors.green,
+                        ),
+
+                      ),
+
+
+
+                      Visibility(
+                        visible: isDeleting==false,
+                        replacement: const CenteredCircularProgressIndicator(),
+                        child: ElevatedButton(
+                          onPressed:()async{
+                            setState(() {
+                              isDeleting = true;
+                            });
+
+                            await _deleteTask();
+
+                            if(!mounted){
+                              return;
+                            }
+
+                            setState((){
+                              isDeleting=false;
+
+                            });
+
+                            Navigator.pop(context);
+
+                          },
+                          child: const Text("Delete task"),
+                          style: ElevatedButton.styleFrom(
+                            fixedSize: Size(120, 40),
+                            backgroundColor: Colors.red,
+                          ),
+                        ),
+                      ),
+
+
+                    ],
+                  )
+
+                ],
               ),
-
-
-
-
-            ],
-          )
-
-
-         ],
-
-       );
-
-    }
+            );
+          },
+        );
+      },
     );
-
-
-
   }
 
-  void _cancelDialogBtn(BuildContext context){
-    Navigator.pop(context);
-  }
 
-  void _deleteDialogBtn(){
 
-  }
+  Future<void> _deleteTask() async {
+
+
+    NetworkResponse response=await NetworkCaller.getRequest(ApiUrls.deleteTaskUrl(widget.task.id));
+    
+     if(!mounted){
+       return;
+     }
+    
+      if(response.success){
+        
+        showSnackbarMesssage(context, "Task deleted successfully. ");
+
+        widget.onDeleteTask();
+
+      }else{
+        showSnackbarMesssage(context, response.errorMsg ?? "Delete failed.");
+      }
+
+  } // this method for delete task
+
+
+
 }
