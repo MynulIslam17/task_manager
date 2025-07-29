@@ -47,10 +47,7 @@ class _MainNavBarHolderScreenState extends State<MainNavBarHolderScreen> {
 
           body: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: RefreshIndicator(
-                color: Colors.green,
-                onRefresh: _onRefresh,
-                child: _screens[_selectedIndex]),
+            child: _screens[_selectedIndex],
           ),
 
       bottomNavigationBar: NavigationBar(

@@ -116,6 +116,10 @@ class AddNewTaskScreen extends StatefulWidget {
 
           NetworkResponse response=await NetworkCaller.postRequest(url: ApiUrls.createTaskUrl,body: taskInfo);
 
+          if(!mounted){
+            return;
+          }
+
           setState(() {
             _newTaskProgress=false;
           });
@@ -124,9 +128,11 @@ class AddNewTaskScreen extends StatefulWidget {
 
             _clearTextFiled();
 
-            showSnackbarMesssage(context, "Task added Successfully");
+            Navigator.pop(context,true);
+
 
           }else{
+
             showSnackbarMesssage(context, response.errorMsg!);
           }
 

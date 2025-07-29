@@ -45,78 +45,87 @@ class NewTaskScreen extends StatefulWidget {
     Widget build(BuildContext context) {
       return Scaffold(
         
-        body: SingleChildScrollView(
-          child: Column(
-            
-            children: [
-            // task summary count list
-          
-             Visibility(
-               visible: _tasksCountProgress==false,
-               replacement: Padding(
-                 padding: const EdgeInsets.symmetric(vertical: 15),
-                 child: CenteredCircularProgressIndicator(),
+        body: RefreshIndicator(
+          color: Colors.green,
+          onRefresh: ()async{
+
+            await _retrieveTaskCount(showLoading: false);
+            await _retrieveNewTask(showLoading: false);
+          },
+          child: SingleChildScrollView(
+            physics:AlwaysScrollableScrollPhysics(),
+            child: Column(
+
+              children: [
+              // task summary count list
+
+               Visibility(
+                 visible: _tasksCountProgress==false,
+                 replacement: Padding(
+                   padding: const EdgeInsets.symmetric(vertical: 15),
+                   child: CenteredCircularProgressIndicator(),
+                 ),
+                 child: SizedBox(
+                   height: 74,
+                   child: ListView.separated(
+
+                     scrollDirection: Axis.horizontal,
+                       itemBuilder: (context,index){
+                          TaskCountSummaryModel summaryModel=tasksSummaryList[index] ;
+
+                       return TaskCountSummaryCard(title:summaryModel.id, count: summaryModel.sum);
+
+
+
+                   },
+
+                       separatorBuilder: (context,index){
+                         return const SizedBox(width: 10);
+                       },
+
+                       itemCount:tasksSummaryList.length),
+
+                 ),
                ),
-               child: SizedBox(
-                 height: 74,
-                 child: ListView.separated(
-          
-                   scrollDirection: Axis.horizontal,
-                     itemBuilder: (context,index){
-                        TaskCountSummaryModel summaryModel=tasksSummaryList[index] ;
-          
-                     return TaskCountSummaryCard(title:summaryModel.id, count: summaryModel.sum);
-          
-          
-          
-                 },
-          
-                     separatorBuilder: (context,index){
-                       return const SizedBox(width: 10);
-                     },
-          
-                     itemCount:tasksSummaryList.length),
-          
-               ),
-             ),
-          
-              // all new task list
-              Visibility(
-                visible: _newTaskListShowingProgress==false,
-                replacement: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: CenteredCircularProgressIndicator()
-          
-                ),
-          
-                child:(taskList.isEmpty)? SizedBox(
-                    height: MediaQuery.of(context).size.height *0.6,
-                    child: Center(child: Text("No New Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color: Colors.red),),))
-                    :ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context,index){
-          
-                    TaskModel task=taskList[index];
-          
-                  return TaskCard(
-                      task:task,
-                      taskType: TaskCategory.tNew,
-                      onStatusUpdate: () {
-                          _retrieveNewTask(showLoading: false);
-                        _retrieveTaskCount();
-          
-                      },
-                  );
-                },
-                  itemCount: taskList.length,
-          
-          
-                ),
-              )
-          
-          
-            ],
+
+                // all new task list
+                Visibility(
+                  visible: _newTaskListShowingProgress==false,
+                  replacement: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: CenteredCircularProgressIndicator()
+
+                  ),
+
+                  child:(taskList.isEmpty)? SizedBox(
+                      height: MediaQuery.of(context).size.height *0.6,
+                      child: Center(child: Text("No New Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color: Colors.red),),))
+                      :ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemBuilder: (context,index){
+
+                      TaskModel task=taskList[index];
+
+                    return TaskCard(
+                        task:task,
+                        taskType: TaskCategory.tNew,
+                        onStatusUpdate: () {
+                            _retrieveNewTask(showLoading: false);
+                          _retrieveTaskCount();
+
+                        },
+                    );
+                  },
+                    itemCount: taskList.length,
+
+
+                  ),
+                )
+
+
+              ],
+            ),
           ),
         ),
         
@@ -135,24 +144,34 @@ class NewTaskScreen extends StatefulWidget {
 
     // retrieve tasks count(new-canceled-progress--complete)
 
-     Future<void> _retrieveTaskCount() async{
+     Future<void> _retrieveTaskCount({ bool showLoading=true }) async{
 
 
-       setState(() {
-         _tasksCountProgress=true;
-       });
+       if(showLoading){ // loading visible or not depend on the flag
+
+         setState(() {
+           _tasksCountProgress=true;
+         });
+
+
+       }
+
 
        
        
         NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.taskCountUrl);
 
-        if(mounted){
 
-          setState(() {
-            _tasksCountProgress=false;
-          });
+       if(showLoading){
+         if(mounted){
 
-        }
+           setState(() {
+             _tasksCountProgress=false;
+           });
+
+         }
+
+       }
 
        if(response.success){
 
@@ -245,9 +264,26 @@ class NewTaskScreen extends StatefulWidget {
 
 
     // go to add new task page
-    void _addNewTaskBtn(){
+    void _addNewTaskBtn() async {
 
-      Navigator.pushNamed(context, AddNewTaskScreen.name);
+      Navigator.pushNamed(context, AddNewTaskScreen.name).then((wasTaskAdded){
+
+        if(wasTaskAdded==true){
+          _retrieveNewTask() ;
+          _retrieveTaskCount();
+
+          if(mounted){
+            showSnackbarMesssage(context, "Task added Successfully");
+
+          }
+
+
+        }else{
+          debugPrint("User returned without adding task");
+        }
+
+
+      });
 
     }
 
