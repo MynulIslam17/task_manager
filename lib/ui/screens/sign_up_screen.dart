@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/main_nav_bar_holder_screen.dart';
@@ -271,7 +272,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
 
   void _tapSignIn(){
-    Navigator.pop(context);
+    //Navigator.pop(context);
+    Get.back();
 
   }
 

@@ -7,6 +7,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:task_manager1/data/models/userModel.dart';
 import 'package:task_manager1/data/service/auth_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
@@ -215,8 +217,11 @@ class SignInScreen extends StatefulWidget {
            if(!mounted){
              return;
            }
-           Navigator.pushNamedAndRemoveUntil(context, MainNavBarHolderScreen.name,(predicate)=>false);
 
+         //  Navigator.pushNamedAndRemoveUntil(context, MainNavBarHolderScreen.name,(predicate)=>false);
+
+           // another way if i use getx for navigate
+          Get.offNamed(MainNavBarHolderScreen.name);
 
          }else{
 
@@ -237,13 +242,15 @@ class SignInScreen extends StatefulWidget {
 
      void _forgetPassText(){
 
-       Navigator.push(context, MaterialPageRoute(builder: (context)=>VerifyEmailScreen()));
+      // Navigator.push(context, MaterialPageRoute(builder: (context)=>VerifyEmailScreen()));
+       Get.to(VerifyEmailScreen());
 
      }
 
      void _tapSignup(){
 
-       Navigator.pushNamed(context, SignUpScreen.name);
+      // Navigator.pushNamed(context, SignUpScreen.name);
+      Get.toNamed(SignUpScreen.name);
 
      }
 

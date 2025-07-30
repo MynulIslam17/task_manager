@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:task_manager1/data/service/auth_controller.dart';
 import 'package:task_manager1/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:task_manager1/ui/screens/sign_in_screen.dart';
@@ -32,9 +33,13 @@ class SplashScreen extends StatefulWidget {
      bool currentUser=await AuthController.isLogedIn();
 
      if(currentUser){
-       Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
+
+      // Navigator.pushReplacementNamed(context, MainNavBarHolderScreen.name);
+       Get.offNamed(MainNavBarHolderScreen.name);
      }else{
-       Navigator.pushReplacementNamed(context, SignInScreen.name);
+      // Navigator.pushReplacementNamed(context, SignInScreen.name);
+       Get.offNamed(SignInScreen.name);
+
      }
 
 
