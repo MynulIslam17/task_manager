@@ -344,10 +344,12 @@ class ProfileScreen extends StatefulWidget {
           profileUpdateInfo["password"]=_passwordTEController.text;
         }
 
+          List<int>?imageBytes;
+
         if(_selectedImage!=null){ // if any image selected 
 
 
-          List<int> imageBytes=await _selectedImage!.readAsBytes();
+            imageBytes=await _selectedImage!.readAsBytes();
 
             String imageString = base64Encode(imageBytes);
             
@@ -372,15 +374,30 @@ class ProfileScreen extends StatefulWidget {
           _passwordTEController.clear();
 
 
-           await _retrieveUserDetails(); // retrieve new save data
+          // await _retrieveUserDetails(); // retrieve new save data
+
+          // another way
+
+          UserModel model=UserModel(id: AuthController.userModel!.id,
+            email: _emailTEController.text.trim(),
+            firstName: _fNameTEController.text.trim(),
+            lastName: _lNTEController.text.trim(),
+            mobile: _mobileTEController.text.trim(),
+            photo: imageBytes == null ? AuthController.userModel?.photo
+                :base64Encode(imageBytes)
+
+
+          );
+
+         await AuthController.updateData( model);
+
+
 
 
           if(mounted){
             showSnackbarMesssage(context, "Profile has been updated");
 
-            setState(() {
-
-            });
+            setState(() {});
           }
 
 
@@ -400,32 +417,32 @@ class ProfileScreen extends StatefulWidget {
 
 
    // retrieve new save data if profile update then execute
-    Future<void> _retrieveUserDetails() async{
-
-
-        NetworkResponse response  =await NetworkCaller.getRequest(ApiUrls.profileDetailsUrl);
-
-        if(response.success){
-
-          List<dynamic> data=response.body?["data"];
-
-          Map<String,dynamic> map= data[0];
-
-          UserModel updatedModel=UserModel.fromJson(map);
-
-         await  AuthController.saveDataAndToken(AuthController.Token!, updatedModel);
-
-
-        }else{
-
-          if(mounted){
-
-            showSnackbarMesssage(context, response.errorMsg!);
-          }
-        }
-
-
-    }
+   //  Future<void> _retrieveUserDetails() async{
+   //
+   //
+   //      NetworkResponse response  =await NetworkCaller.getRequest(ApiUrls.profileDetailsUrl);
+   //
+   //      if(response.success){
+   //
+   //        List<dynamic> data=response.body?["data"];
+   //
+   //        Map<String,dynamic> map= data[0];
+   //
+   //        UserModel updatedModel=UserModel.fromJson(map);
+   //
+   //       await  AuthController.saveDataAndToken(AuthController.Token!, updatedModel);
+   //
+   //
+   //      }else{
+   //
+   //        if(mounted){
+   //
+   //          showSnackbarMesssage(context, response.errorMsg!);
+   //        }
+   //      }
+   //
+   //
+   //  }
 
 
 
