@@ -1,11 +1,15 @@
    import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:task_manager1/controllers/completed_task_controller.dart';
 import 'package:task_manager1/data/models/task_model.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/widgets/snackbar.dart';
 import 'package:task_manager1/ui/widgets/task_card.dart';
 
+import '../../controllers/new_task_controller.dart';
 import '../widgets/circular_progress_indicator.dart';
 
 class CompletedTaskListScreen extends StatefulWidget {
@@ -20,15 +24,15 @@ class CompletedTaskListScreen extends StatefulWidget {
 
    class _CompletedTaskListScreenState extends State<CompletedTaskListScreen> {
 
-  bool _completedTaskListShowingProgress=false;
-  List<TaskModel> completedTaskList=[];
+
+    final  _completedTaskController=Get.find<CompletedTaskController>();
 
 
 
    @override
   void initState() {
     // TODO: implement initState
-    _retrieveCompletedTask();
+    _fetchCompletedTask();
     super.initState();
   }
 
@@ -36,80 +40,52 @@ class CompletedTaskListScreen extends StatefulWidget {
      @override
      Widget build(BuildContext context) {
 
-       return Visibility(
-           visible: _completedTaskListShowingProgress==false,
-           replacement: Padding(
-              padding: EdgeInsets.symmetric(vertical: 10),
-               child: CenteredCircularProgressIndicator()),
-         child: (completedTaskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
+       return GetBuilder<CompletedTaskController>(
 
-             : ListView.builder(itemBuilder: (context,index){
+           builder: (controller){
 
-            TaskModel task= completedTaskList[index];
+           return Visibility(
+             visible: controller.taskProgress==false,
+             replacement: Padding(
+                 padding: EdgeInsets.symmetric(vertical: 10),
+                 child: CenteredCircularProgressIndicator()),
+             child: (controller.taskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
 
-        return TaskCard(task: task, taskType: TaskCategory.Completed,
-        onStatusUpdate: (){
-          _retrieveCompletedTask();
-        },
-          onDeleteTask: ()async{
-           await _retrieveCompletedTask();
-          },
+                 : ListView.builder(itemBuilder: (context,index){
+
+               TaskModel task= controller.taskList[index];
+
+               return TaskCard(task: task,
+                 taskType: TaskCategory.Completed,
+                 onStatusUpdate: ()async{
+                  await _fetchCompletedTask();
+                 },
+                 onDeleteTask: ()async{
+                   await _fetchCompletedTask();
+                 },
 
 
-        );
+               );
 
 
-         },
-         itemCount: completedTaskList.length,
-         ),
+             },
+               itemCount: controller.taskList.length,
+             ),
+           );
+
+       }
        );
      }
 
 
 
-     Future<void> _retrieveCompletedTask() async{
+     Future<void> _fetchCompletedTask() async{
 
-     setState(() {
-       _completedTaskListShowingProgress=true;
-     });
+       bool success=await _completedTaskController.retrieveCompletedTask();
 
-
-
-        NetworkResponse response=await NetworkCaller.getRequest(ApiUrls.completedTaskListUrl);
-
-       setState(() {
-         _completedTaskListShowingProgress=false;
-       });
-
-       if(response.success){
-
-         List<TaskModel> list=[];
-
-         final List<dynamic>data=response.body?["data"];
-
-           for(Map<String,dynamic>task in data){
-
-               list.add(TaskModel.fromJson(task));
-
-           }
-
-
-           setState(() {
-             completedTaskList=list;
-           });
-
-
-
-       }else{
-
-         if(mounted){
-           showSnackbarMesssage(context,response.errorMsg!);
-         }
-
-
+       if(!success && mounted){
+         showSnackbarMesssage(context, _completedTaskController.errorMessage!);
        }
-
-
 
 
      }
