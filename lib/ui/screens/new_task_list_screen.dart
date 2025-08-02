@@ -1,11 +1,12 @@
   import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager1/controllers/new_task_controller.dart';
 import 'package:task_manager1/data/models/task_count_summary_model.dart';
 import 'package:task_manager1/data/models/task_model.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/add_new_task_screen.dart';
-import 'package:task_manager1/ui/utils/aseets_path.dart';
 import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/snackbar.dart';
 import 'package:task_manager1/ui/widgets/task_count_summary_card.dart';
@@ -25,17 +26,17 @@ class NewTaskScreen extends StatefulWidget {
   class _NewTaskScreenState extends State<NewTaskScreen> {
 
 
-     bool _newTaskListShowingProgress=false;
+    final  _taskController=Get.find<NewTaskController>();
+
 
      bool _tasksCountProgress=false;
-
-     List<TaskModel>taskList=[];
      List<TaskCountSummaryModel>tasksSummaryList=[];
 
    @override
   void initState() {
     // TODO: implement initState
-     _retrieveNewTask();
+    // _retrieveNewTask();
+     _fetchNewTask();
      _retrieveTaskCount();
     super.initState();
   }
@@ -50,7 +51,7 @@ class NewTaskScreen extends StatefulWidget {
           onRefresh: ()async{
 
             await _retrieveTaskCount(showLoading: false);
-            await _retrieveNewTask(showLoading: false);
+           // await _retrieveNewTask(showLoading: false);
           },
           child: SingleChildScrollView(
             physics:AlwaysScrollableScrollPhysics(),
@@ -89,44 +90,55 @@ class NewTaskScreen extends StatefulWidget {
                ),
 
                 // all new task list
-                Visibility(
-                  visible: _newTaskListShowingProgress==false,
-                  replacement: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10),
-                      child: CenteredCircularProgressIndicator()
 
-                  ),
+                GetBuilder<NewTaskController>(
 
-                  child:(taskList.isEmpty)? SizedBox(
-                      height: MediaQuery.of(context).size.height *0.6,
-                      child: Center(child: Text("No New Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color: Colors.red),),))
-                      :ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemBuilder: (context,index){
+                    builder: (controller){
 
-                      TaskModel task=taskList[index];
+                      return  Visibility(
+                        visible: controller.progressNewTask==false,
+                        replacement: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 10),
+                            child: CenteredCircularProgressIndicator()
 
-                    return TaskCard(
-                        task:task,
-                        taskType: TaskCategory.tNew,
-                        onStatusUpdate: () {
-                            _retrieveNewTask(showLoading: false);
-                          _retrieveTaskCount();
+                        ),
 
-                        },
+                        child:(controller.newTaskList.isEmpty)? SizedBox(
+                            height: MediaQuery.of(context).size.height *0.6,
+                            child: Center(child: Text("No New Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color: Colors.red),),)
 
-                      onDeleteTask: ()async{
-                        await  _retrieveNewTask();
-                        await  _retrieveTaskCount();
-                      },
-                    );
-                  },
-                    itemCount: taskList.length,
+                        )
+                            :ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context,index){
+
+                            TaskModel task=controller.newTaskList[index];
+
+                            return TaskCard(
+                              task:task,
+                              taskType: TaskCategory.tNew,
+                              onStatusUpdate: ()async {
+                              //  _fetchNewTask();
+                              await  controller.retrieveNewTask(showLoading: false);
+                                _retrieveTaskCount();
+
+                              },
+
+                              onDeleteTask: ()async{
+
+                               await controller.retrieveNewTask(showLoading: false);
+                                await  _retrieveTaskCount();
+                              },
+                            );
+                          },
+                          itemCount: controller.newTaskList.length,
 
 
-                  ),
-                )
+                        ),
+                      );
+
+                    })
 
 
               ],
@@ -212,85 +224,39 @@ class NewTaskScreen extends StatefulWidget {
 
 
 
-   // retrieve all new task list
-    Future<void> _retrieveNewTask({ bool showLoading = true} ) async{
 
 
-      if(showLoading){
-        setState(() {
-          _newTaskListShowingProgress=true;
-        });
+    Future<void> _fetchNewTask() async {
+
+      bool success = await _taskController.retrieveNewTask();
+      if (!success && mounted) {
+        showSnackbarMesssage(context, _taskController.errorMsg!);
       }
-
-
-      NetworkResponse response=await NetworkCaller.getRequest(ApiUrls.newTaskListUrl);
-
-
-      if(showLoading){
-        setState(() {
-          _newTaskListShowingProgress=false;
-        });
-      }
-
-
-     if(response.success){
-
-       List<TaskModel> newList=[];
-
-        List<dynamic>dataList=response.body?["data"];
-
-        for(Map<String,dynamic> task in dataList){
-
-                newList.add(TaskModel.fromJson(task));
-        }
-
-
-
-
-       setState(() {
-         taskList=newList;
-
-       });
-
-
-     }else{
-
-       if(mounted) {
-         showSnackbarMesssage(context, response.errorMsg!);
-       }
-
-     }
-
-
-
-
     }
+
+
+
+
 
 
 
     // go to add new task page
     void _addNewTaskBtn() async {
 
-      Navigator.pushNamed(context, AddNewTaskScreen.name).then((wasTaskAdded){
-
-        if(wasTaskAdded==true){
-          _retrieveNewTask() ;
+      Get.toNamed(AddNewTaskScreen.name)!.then((wasTaskAdded) {
+        if (wasTaskAdded == true) {
+          _taskController.retrieveNewTask(showLoading: false);
           _retrieveTaskCount();
 
-          if(mounted){
+          if (mounted) {
             showSnackbarMesssage(context, "Task added Successfully");
-
           }
-
-
-        }else{
+        } else {
           debugPrint("User returned without adding task");
         }
-
-
       });
-
     }
+
 
 
 

@@ -319,7 +319,7 @@ class _TaskCardState extends State<TaskCard> {
 
                           child: Text("Cancel"),
                         style: ElevatedButton.styleFrom(
-                          fixedSize: Size(120, 40),
+                          fixedSize: Size(100, 40),
                           backgroundColor: Colors.green,
                         ),
 
@@ -350,9 +350,9 @@ class _TaskCardState extends State<TaskCard> {
                             Navigator.pop(context);
 
                           },
-                          child: const Text("Delete task"),
+                          child: const Text("Delete"),
                           style: ElevatedButton.styleFrom(
-                            fixedSize: Size(120, 40),
+                            fixedSize: Size(100, 40),
                             backgroundColor: Colors.red,
                           ),
                         ),

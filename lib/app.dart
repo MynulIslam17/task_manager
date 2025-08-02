@@ -2,6 +2,7 @@
   import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:task_manager1/binding.dart';
 import 'package:task_manager1/ui/screens/add_new_task_screen.dart';
 import 'package:task_manager1/ui/screens/main_nav_bar_holder_screen.dart';
 import 'package:task_manager1/ui/screens/pass_reset_screen.dart';
@@ -23,6 +24,7 @@ class TaskManger extends StatelessWidget{
   Widget build(BuildContext context) {
 
     return  GetMaterialApp(
+      initialBinding: ControllerBindings(),
      // home: SplashScreen(),
       debugShowCheckedModeBanner: false,
       navigatorKey: navigator,
