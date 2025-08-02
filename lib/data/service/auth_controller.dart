@@ -30,6 +30,19 @@ class AuthController {
 
 
    }
+
+
+   static Future<void> updateData( UserModel upModel) async{
+
+     final SharedPreferences pref=await SharedPreferences.getInstance();
+
+     await pref.setString(_userKey, jsonEncode(upModel.toJson())); // jsonEncode takes map/list convert it to jsonString
+
+     userModel=upModel;
+
+
+   }
+
    
    
    static Future<void> getUserData()  async{

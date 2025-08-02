@@ -4,7 +4,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:task_manager1/controllers/profile_update_controller.dart';
 import 'package:task_manager1/data/models/userModel.dart';
 import 'package:task_manager1/data/service/auth_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
@@ -28,10 +31,11 @@ class ProfileScreen extends StatefulWidget {
   class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _obsecureText=true;
-  bool _profileUpdateProgress=false;
+  // bool _profileUpdateProgress=false;
+  final _profileUpdateController=Get.find<ProfileUpdateController>();
 
   final _formKey=GlobalKey<FormState>();
- final  TextEditingController _emailTEController=TextEditingController();
+  final  TextEditingController _emailTEController=TextEditingController();
  final TextEditingController _fNameTEController=TextEditingController();
  final TextEditingController _lNTEController=TextEditingController();
  final TextEditingController _mobileTEController=TextEditingController();
@@ -54,6 +58,7 @@ class ProfileScreen extends StatefulWidget {
     @override
     Widget build(BuildContext context) {
       return Scaffold(
+
         appBar: TmAppBar(),
 
         body:SafeArea(
@@ -202,12 +207,16 @@ class ProfileScreen extends StatefulWidget {
                         const SizedBox(height: 20,),
 
 
-                        Visibility(
-                          visible: _profileUpdateProgress==false,
-                          replacement: CenteredCircularProgressIndicator(),
-                          child: ElevatedButton(onPressed: _updateSubmitBtn,
-                              child: Icon(Icons.arrow_circle_right_outlined)),
-                        ),
+                        GetBuilder<ProfileUpdateController>(
+                            builder: (controller){
+                              return   Visibility(
+                                visible: controller.inProgress==false,
+                                replacement: CenteredCircularProgressIndicator(),
+                                child: ElevatedButton(onPressed: _updateSubmitBtn,
+                                    child: Icon(Icons.arrow_circle_right_outlined)),
+                              );
+
+                            }),
 
 
                         const SizedBox(height: 22,)
@@ -330,6 +339,9 @@ class ProfileScreen extends StatefulWidget {
     void _updateSubmitBtn() async{
       if(_formKey.currentState!.validate()){
 
+        List<int>? imageBytes;
+
+
         Map<String,dynamic>profileUpdateInfo={
           // email cant be change once added so this filed missing
           "firstName":_fNameTEController.text.trim(),
@@ -344,50 +356,29 @@ class ProfileScreen extends StatefulWidget {
           profileUpdateInfo["password"]=_passwordTEController.text;
         }
 
-        if(_selectedImage!=null){ // if any image selected 
+        if(_selectedImage!=null){ // if any image selected
 
 
-          List<int> imageBytes=await _selectedImage!.readAsBytes();
+           imageBytes   =await _selectedImage!.readAsBytes();
 
             String imageString = base64Encode(imageBytes);
-            
+
             profileUpdateInfo["photo"]=imageString;
 
         }
 
-        setState(() {
-          _profileUpdateProgress=true;
-        });
-        
-        NetworkResponse response= await NetworkCaller.postRequest(url: ApiUrls.profileUpdateUrl,body: profileUpdateInfo);
 
 
-        if(mounted){
-          setState(() {
-            _profileUpdateProgress=false;
-          });
-        }
+        bool success=await _profileUpdateController.updateProfile(profileUpdateInfo,imageBytes);
 
-        if(response.success){ // if profile updated success
+
+
+        if(success){ // if profile updated success
           _passwordTEController.clear();
-
-
-           await _retrieveUserDetails(); // retrieve new save data
-
-
-          if(mounted){
-            showSnackbarMesssage(context, "Profile has been updated");
-
-            setState(() {
-
-            });
-          }
-
-
 
         }else{
           if(mounted){
-            showSnackbarMesssage(context, response.errorMsg!);
+            showSnackbarMesssage(context,_profileUpdateController.errorMassage!);
           }
         }
 

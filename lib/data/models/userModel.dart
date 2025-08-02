@@ -10,6 +10,9 @@
   String ? photo;
 
 
+  UserModel({required this.email,required this.id,required this.firstName,required this.lastName ,required this.mobile,this.photo});
+
+
 
   UserModel.fromJson(Map<String,dynamic>json){
 
