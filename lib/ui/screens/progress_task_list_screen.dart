@@ -1,6 +1,8 @@
 
    import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:task_manager1/controllers/progress_task_controller.dart';
 import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/task_card.dart';
 
@@ -18,88 +20,57 @@ class ProgressTaskListScreen extends StatefulWidget {
 
    class _ProgressTaskListScreenState extends State<ProgressTaskListScreen> {
 
-  bool _progressTaskListProgress=false;
-  List<TaskModel>progressTaskList=[];
+    final _progressTaskController=Get.find<ProgressTaskController>();
 
    @override
   void initState() {
     // TODO: implement initState
-     _progressTaskRetrieve();
+     _fetchProgressTask();
     super.initState();
   }
 
 
      @override
      Widget build(BuildContext context) {
-      return Visibility(
-        visible: _progressTaskListProgress==false,
-        replacement: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: CenteredCircularProgressIndicator(),
-        ),
-        child:(progressTaskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
-            : ListView.builder(itemBuilder: (context,index){
-          TaskModel task=progressTaskList[index];
-        return TaskCard(
-          task: task,
-          taskType: TaskCategory.Progress,
-        onStatusUpdate: _progressTaskRetrieve,
+      return GetBuilder<ProgressTaskController>(
+          builder: (controller){
+            return  Visibility(
+              visible: controller.progressTaskLoad==false,
+              replacement: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: CenteredCircularProgressIndicator(),
+              ),
+              child:(controller.taskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
+                  : ListView.builder(itemBuilder: (context,index){
+                TaskModel task=controller.taskList[index];
+                return TaskCard(
+                  task: task,
+                  taskType: TaskCategory.Progress,
+                  onStatusUpdate: _fetchProgressTask,
 
-          onDeleteTask: () async {
-           await _progressTaskRetrieve();
-          },
+                  onDeleteTask: () async {
+                    await _fetchProgressTask();
+                  },
 
 
-        );
-        },
-          itemCount: progressTaskList.length,
-        ),
+                );
+              },
+                itemCount: controller.taskList.length,
+              ),
+            );
+          }
       );
      }
 
 
-     Future<void> _progressTaskRetrieve() async{
+     Future<void> _fetchProgressTask() async{
 
-       setState(() {
-         _progressTaskListProgress=true;
-       });
+       bool success= await _progressTaskController.retrieveProgressTask();
 
+       if(!success && mounted){
 
-
-       NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.progressTaskListUrl);
-
-       setState(() {
-         _progressTaskListProgress=false;
-       });
-
-       if(response.success){
-
-         List<TaskModel> list=[];
-         final List<dynamic>data=response.body?["data"];
-
-         for(Map<String,dynamic>task in data){
-           list.add(TaskModel.fromJson(task));
-         }
-
-
-         setState(() {
-           progressTaskList=list;
-         });
-
-
-       }else{
-         showSnackbarMesssage(context, response.errorMsg!);
+         showSnackbarMesssage(context,_progressTaskController.errorMessage!);
        }
-
-
-
-
-
-
-
-
-
-
 
      }
 
