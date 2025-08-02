@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:task_manager1/controllers/new_task_controller.dart';
+import 'package:task_manager1/controllers/taskCount_controller.dart';
 import 'package:task_manager1/data/models/task_count_summary_model.dart';
 import 'package:task_manager1/data/models/task_model.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
@@ -27,17 +28,15 @@ class NewTaskScreen extends StatefulWidget {
 
 
     final  _taskController=Get.find<NewTaskController>();
+    final _taskCountController=Get.find<TaskCountController>();
 
-
-     bool _tasksCountProgress=false;
-     List<TaskCountSummaryModel>tasksSummaryList=[];
 
    @override
   void initState() {
     // TODO: implement initState
     // _retrieveNewTask();
      _fetchNewTask();
-     _retrieveTaskCount();
+     _fetchTaskCount();
     super.initState();
   }
 
@@ -50,8 +49,7 @@ class NewTaskScreen extends StatefulWidget {
           color: Colors.green,
           onRefresh: ()async{
 
-            await _retrieveTaskCount(showLoading: false);
-           // await _retrieveNewTask(showLoading: false);
+             await _taskCountController.taskSummaryCount(showLoading: false);
           },
           child: SingleChildScrollView(
             physics:AlwaysScrollableScrollPhysics(),
@@ -60,33 +58,39 @@ class NewTaskScreen extends StatefulWidget {
               children: [
               // task summary count list
 
-               Visibility(
-                 visible: _tasksCountProgress==false,
-                 replacement: Padding(
-                   padding: const EdgeInsets.symmetric(vertical: 15),
-                   child: CenteredCircularProgressIndicator(),
-                 ),
-                 child: SizedBox(
-                   height: 74,
-                   child: ListView.separated(
+               GetBuilder<TaskCountController>(
+                   builder: (controller){
 
-                     scrollDirection: Axis.horizontal,
-                       itemBuilder: (context,index){
-                          TaskCountSummaryModel summaryModel=tasksSummaryList[index] ;
+                     return Visibility(
+                       visible: controller.countProgress==false,
+                       replacement: Padding(
+                         padding: const EdgeInsets.symmetric(vertical: 15),
+                         child: CenteredCircularProgressIndicator(),
+                       ),
+                       child: SizedBox(
+                         height: 74,
+                         child: ListView.separated(
 
-                       return TaskCountSummaryCard(title:summaryModel.id, count: summaryModel.sum);
+                             scrollDirection: Axis.horizontal,
+                             itemBuilder: (context,index){
+                               TaskCountSummaryModel summaryModel=controller.taskCountList[index];
+
+                               return TaskCountSummaryCard(title:summaryModel.id, count: summaryModel.sum);
 
 
 
-                   },
+                             },
 
-                       separatorBuilder: (context,index){
-                         return const SizedBox(width: 10);
-                       },
+                             separatorBuilder: (context,index){
+                               return const SizedBox(width: 10);
+                             },
 
-                       itemCount:tasksSummaryList.length),
+                             itemCount:controller.taskCountList.length
+                         ),
 
-                 ),
+                       ),
+                     );
+                   }
                ),
 
                 // all new task list
@@ -96,14 +100,14 @@ class NewTaskScreen extends StatefulWidget {
                     builder: (controller){
 
                       return  Visibility(
-                        visible: controller.progressNewTask==false,
+                        visible: controller.taskProgress==false,
                         replacement: Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
                             child: CenteredCircularProgressIndicator()
 
                         ),
 
-                        child:(controller.newTaskList.isEmpty)? SizedBox(
+                        child:(controller.taskList.isEmpty)? SizedBox(
                             height: MediaQuery.of(context).size.height *0.6,
                             child: Center(child: Text("No New Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color: Colors.red),),)
 
@@ -113,7 +117,7 @@ class NewTaskScreen extends StatefulWidget {
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context,index){
 
-                            TaskModel task=controller.newTaskList[index];
+                            TaskModel task=controller.taskList[index];
 
                             return TaskCard(
                               task:task,
@@ -121,18 +125,19 @@ class NewTaskScreen extends StatefulWidget {
                               onStatusUpdate: ()async {
                               //  _fetchNewTask();
                               await  controller.retrieveNewTask(showLoading: false);
-                                _retrieveTaskCount();
+
+                              await  Get.find<TaskCountController>().taskSummaryCount();
 
                               },
 
                               onDeleteTask: ()async{
 
                                await controller.retrieveNewTask(showLoading: false);
-                                await  _retrieveTaskCount();
+                               await Get.find<TaskCountController>().taskSummaryCount();
                               },
                             );
                           },
-                          itemCount: controller.newTaskList.length,
+                          itemCount: controller.taskList.length,
 
 
                         ),
@@ -161,66 +166,16 @@ class NewTaskScreen extends StatefulWidget {
 
     // retrieve tasks count(new-canceled-progress--complete)
 
-     Future<void> _retrieveTaskCount({ bool showLoading=true }) async{
+    Future<void> _fetchTaskCount()async{
+
+      bool success = await _taskCountController.taskSummaryCount();
+
+      if(!success && mounted){
+        showSnackbarMesssage(context, _taskCountController.errorMessage!);
+      }
 
 
-       if(showLoading){ // loading visible or not depend on the flag
-
-         setState(() {
-           _tasksCountProgress=true;
-         });
-
-
-       }
-
-
-       
-       
-        NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.taskCountUrl);
-
-
-       if(showLoading){
-         if(mounted){
-
-           setState(() {
-             _tasksCountProgress=false;
-           });
-
-         }
-
-       }
-
-       if(response.success){
-
-            List<TaskCountSummaryModel> list=[];
-
-          final List<dynamic>data=response.body?["data"];
-
-          for(Map<String,dynamic> tasksCount in data){
-            list.add(TaskCountSummaryModel.fromJsom(tasksCount));
-          }
-
-          if(mounted){
-            setState(() {
-              tasksSummaryList=list;
-            });
-          }
-
-
-
-       }else{
-
-         if(mounted){
-           showSnackbarMesssage(context,response.errorMsg!);
-         }
-
-
-
-       }
-
-
-
-     }
+    }
 
 
 
@@ -230,7 +185,7 @@ class NewTaskScreen extends StatefulWidget {
 
       bool success = await _taskController.retrieveNewTask();
       if (!success && mounted) {
-        showSnackbarMesssage(context, _taskController.errorMsg!);
+        showSnackbarMesssage(context, _taskController.errorMessage!);
       }
     }
 
@@ -246,7 +201,7 @@ class NewTaskScreen extends StatefulWidget {
       Get.toNamed(AddNewTaskScreen.name)!.then((wasTaskAdded) {
         if (wasTaskAdded == true) {
           _taskController.retrieveNewTask(showLoading: false);
-          _retrieveTaskCount();
+          _fetchTaskCount();
 
           if (mounted) {
             showSnackbarMesssage(context, "Task added Successfully");

@@ -9,11 +9,15 @@ import 'package:task_manager1/data/urls/api_urls.dart';
 
 class NewTaskController extends  GetxController {
 
-  bool  progressNewTask=false;
-  //bool progressTaskCount=false;
-  String ? errorMsg;
+  bool  _progressNewTask=false;
 
-  List<TaskModel>newTaskList=[];
+  String ? _errorMsg;
+
+  List<TaskModel>_newTaskList=[];
+
+   bool get taskProgress=>_progressNewTask;
+   String ? get errorMessage=>_errorMsg;
+   List<TaskModel> get  taskList=>_newTaskList;
 
 
   Future<bool>  retrieveNewTask({bool showLoading = true}) async{
@@ -21,7 +25,7 @@ class NewTaskController extends  GetxController {
     bool success=false;
 
     if(showLoading){
-      progressNewTask=true;
+      _progressNewTask=true;
       update();
     }
 
@@ -30,7 +34,7 @@ class NewTaskController extends  GetxController {
 
 
     if(showLoading){
-      progressNewTask=false;
+      _progressNewTask=false;
       update();
     }
 
@@ -48,14 +52,14 @@ class NewTaskController extends  GetxController {
 
       }
 
-      newTaskList=newList;
+      _newTaskList=newList;
 
-       errorMsg=null;
+      _errorMsg=null;
 
      success=true;
     }else{
 
-      errorMsg=response.errorMsg ?? "Something went wrong";
+      _errorMsg=response.errorMsg ?? "Something went wrong";
 
     }
 
