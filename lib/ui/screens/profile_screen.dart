@@ -240,7 +240,7 @@ class ProfileScreen extends StatefulWidget {
 
     Navigator.pop(context);
 
-    final XFile? pickedImage = await picker.pickImage(source: source);
+    final XFile? pickedImage = await picker.pickImage(source: source,imageQuality: 60);
 
     if(pickedImage!=null){
       setState(() {

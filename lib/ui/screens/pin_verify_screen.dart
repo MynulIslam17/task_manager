@@ -1,8 +1,10 @@
 
   import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:task_manager1/controllers/pin_verify_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/pass_reset_screen.dart';
@@ -32,6 +34,11 @@ class PinVerifyScreen extends StatefulWidget {
   }
 
   class _PinVerifyScreenState extends State<PinVerifyScreen> {
+  
+  
+  final _pinVerifyController=Get.find<PinVerifyController>();
+
+  final TextEditingController _otpTEController=TextEditingController();
 
 
 
@@ -50,10 +57,9 @@ class PinVerifyScreen extends StatefulWidget {
     super.initState();
   }
 
-    bool _pinVerifyProgress=false;
 
 
-   final TextEditingController _otpTEController=TextEditingController();
+
 
 
     @override
@@ -71,7 +77,7 @@ class PinVerifyScreen extends StatefulWidget {
                     
                     Text("PIN Verfication ",style: Theme.of(context).textTheme.titleMedium,),
                     const SizedBox(height: 1,),
-                    Text("A 6 digit verification code will send to your email address",style: Theme.of(context).textTheme.titleSmall,),
+                    Text( "A 6 digit verification code will send to your email address",style: Theme.of(context).textTheme.titleSmall,),
                     const SizedBox(
                       height: 15,
                     ),
@@ -103,15 +109,19 @@ class PinVerifyScreen extends StatefulWidget {
                         height: 20,
                     ),
               
-                    Visibility(
-                      visible: _pinVerifyProgress==false,
-                       replacement: CenteredCircularProgressIndicator(),
-                      child: ElevatedButton(
-                          onPressed: _verifyButton,
-                          child: Text("Verify")
+                    GetBuilder<PinVerifyController>(
+                        builder: (controller){
+                      
+                          return Visibility(
+                            visible: controller.isVerify==false,
+                            replacement: CenteredCircularProgressIndicator(),
+                            child: ElevatedButton(
+                                onPressed: _verifyButton,
+                                child: Text("Verify")
 
-                      ),
-                    ),
+                            ),
+                          );
+                    }),
               
                     const SizedBox(
                       height: 20,
@@ -151,35 +161,26 @@ class PinVerifyScreen extends StatefulWidget {
       if(otpString.length!=6){
         showSnackbarMesssage(context, "Please enter the 6-digit OTP");
         return;
-      } // if not true then below code will not execute
-
-     _pinVerifyProgress=true;
-
-      NetworkResponse response =await NetworkCaller.getRequest(ApiUrls.verifyPinUrl(widget.email,otpString));
-
+      }
+      
+      bool success=await _pinVerifyController.verifyOtp(email: widget.email, otp: otpString);
+      
+      
       if(!mounted){
         return;
       }
-
-      setState(() {
-        _pinVerifyProgress=false;
-      });
-
-       if(response.success){
-         final String data=response.body?["data"];
-
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>PassResetScreen(email: widget.email,otp: otpString,message: data,)));
-
-       }else{
-         showSnackbarMesssage(context, response.errorMsg!);
-       }
-
+      
+      if(success){
+        Get.to(PassResetScreen(email: widget.email, otp: otpString,message: _pinVerifyController.successMessage,));
+      }else{
+        showSnackbarMesssage(context, _pinVerifyController.errorMessage!);
+      }
 
     }
 
     void _tapSignIn(){
 
-     Navigator.pushNamedAndRemoveUntil(context, SignUpScreen.name, (predicate)=>false);
+      Get.offAllNamed(SignInScreen.name);
 
     }
 

@@ -2,6 +2,9 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:task_manager1/controllers/verify_email_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/pin_verify_screen.dart';
@@ -23,6 +26,8 @@ class VerifyEmailScreen extends StatefulWidget {
 class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
 
+
+  final _verifyEmailController=Get.find<VerifyEmailController>();
 
   final _formKey=GlobalKey<FormState>();
   final TextEditingController _emailTEController=TextEditingController();
@@ -78,14 +83,21 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                    ),
                    const SizedBox(height: 20,),
 
-                   Visibility(
-                     visible:_verifyEmailProgress==false ,
-                     replacement: CenteredCircularProgressIndicator(),
-                     child: ElevatedButton(
-                         onPressed: _emailVerifyButton,
-                         child: Icon(Icons.arrow_circle_right_outlined)
-                     ),
-                   ),
+
+                    GetBuilder<VerifyEmailController>(
+
+                        builder: (controller){
+
+                          return  Visibility(
+                            visible:controller.isVerify==false ,
+                            replacement: CenteredCircularProgressIndicator(),
+                            child: ElevatedButton(
+                                onPressed: _emailVerifyButton,
+                                child: Icon(Icons.arrow_circle_right_outlined)
+                            ),
+                          ) ;
+                        }
+                    ),
 
                    const SizedBox(height: 20,),
 
@@ -119,38 +131,19 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
 
 
-
-      setState(() {
-        _verifyEmailProgress=true;
-      });
+       bool success=await _verifyEmailController.emailVerified(_emailTEController.text.trim());
 
 
-
-       NetworkResponse response=await NetworkCaller.getRequest(ApiUrls.verifyEmailUrl(_emailTEController.text.trim()));
-
-
-     if(!mounted) {
-       return;
-     }
-
-     setState(() {
-       _verifyEmailProgress=false;
-     });
-
-
-      if(response.success){
-
-        final String data=response.body?["data"];
-
-        Navigator.push(context, MaterialPageRoute(builder: (context)=>PinVerifyScreen(email:_emailTEController.text.trim(),message: data)));
-
-      }
-      else{
-
-        showSnackbarMesssage(context, response.errorMsg!);
+      if(!mounted){
+        return;
       }
 
+       if(success){
 
+         Get.to(PinVerifyScreen(email: _emailTEController.text.trim(),message: _verifyEmailController.successMessage,));
+       }else{
+         showSnackbarMesssage(context, _verifyEmailController.errorMsg!);
+       }
 
 
     }

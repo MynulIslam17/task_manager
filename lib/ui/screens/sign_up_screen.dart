@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:task_manager1/controllers/singnup_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/main_nav_bar_holder_screen.dart';
@@ -9,6 +10,7 @@ import 'package:task_manager1/ui/widgets/circular_progress_indicator.dart';
 import 'package:task_manager1/ui/widgets/password_field.dart';
 import 'package:task_manager1/ui/widgets/screen_background.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:task_manager1/ui/widgets/snackbar.dart';
 
 class SignUpScreen extends StatefulWidget {
 
@@ -31,7 +33,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passTEController=TextEditingController();
 
 
-  bool _signupProgresss=false;
+
+  final _signUpController=Get.find<SignUpController>();
 
 
 
@@ -42,6 +45,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       body: ScreenBackground(
         child: SingleChildScrollView(
@@ -154,13 +158,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 25,),
 
 
-                  Visibility(
-                    visible:_signupProgresss==false ,
-                    replacement: CenteredCircularProgressIndicator(),
-                    child: ElevatedButton(
-                      onPressed: _signUpButton,
+                  GetBuilder<SignUpController>(
+
+                      builder: (controller){
+
+                      return   Visibility(
+                      visible:controller.isRegister ==false ,
+                      replacement: CenteredCircularProgressIndicator(),
+                      child: ElevatedButton(
+                        onPressed: _signUpButton,
                         child: Icon(Icons.arrow_circle_right_outlined),
-                    ),
+                      ),
+                    );
+
+                  }
+
                   ),
 
                   const SizedBox(height: 20,),
@@ -214,13 +226,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _signUpButton() async{
 
     if(_formKe.currentState!.validate()){
-    //  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Successfully enter")));
-      _signupProgresss=true;
-     setState(() {
 
-     });
 
-     _registerOperation();
+      bool success =await _signUpController.registerUser(email: _emailTEController.text.trim(),
+          fName: _fNameTEController.text.trim(),
+          lName: _lNameTEController.text.trim(),
+          mobile: _mobileTEController.text.trim(),
+          password: _passTEController.text);
+
+      if(!mounted){
+        return;
+      }
+
+      if(success){
+        showSnackbarMesssage(context, "User registered successfully.please login .");
+
+        _emailTEController.clear();
+        _lNameTEController.clear();
+        _fNameTEController.clear();
+        _mobileTEController.clear();
+        _passTEController.clear();
+
+      }else{
+        showSnackbarMesssage(context, _signUpController.errorMsg!);
+      }
+
 
 
     }
@@ -229,44 +259,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
 
-  Future<void> _registerOperation() async{
 
-
-    Map<String,dynamic> userInfo=
-      {
-        "email":_emailTEController.text.trim(),
-        "firstName":_fNameTEController.text.trim(),
-        "lastName":_lNameTEController.text.trim(),
-        "mobile":_mobileTEController.text.trim(),
-        "password":_passTEController.text
-      };
-
-
-           NetworkResponse response= await NetworkCaller.postRequest(url: ApiUrls.registerUr,body: userInfo);
-
-          _signupProgresss=false;
-           setState(() {
-
-           });
-
-           if(response.success){
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Resgistration  completed")));
-
-             _emailTEController.clear();
-             _fNameTEController.clear();
-             _lNameTEController.clear();
-             _mobileTEController.clear();
-             _passTEController.clear();
-
-           }else{
-
-             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response.errorMsg!)));
-
-           }
-
-
-
-  }
 
 
 

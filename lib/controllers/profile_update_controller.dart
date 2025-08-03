@@ -21,7 +21,7 @@ class ProfileUpdateController extends GetxController {
     );
 
     _inProgress = false;
-    update(); // again update UI
+    update(); // again update ui
 
     if (response.success) {
       // Update local AuthController data
@@ -32,11 +32,11 @@ class ProfileUpdateController extends GetxController {
         lastName: updateData["lastName"],
         mobile: updateData["mobile"],
         photo: imageBytes == null
-            ? AuthController.userModel!.photo
-            : base64Encode(imageBytes),
+            ? AuthController.userModel!.photo // if no image selected then add previous one
+            : base64Encode(imageBytes),// if selected then convert to string
       );
 
-      await AuthController.saveDataAndToken(AuthController.Token!, updatedUser);
+      await AuthController.updateData( updatedUser);
       update();
       return true;
     } else {

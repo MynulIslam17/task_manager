@@ -117,7 +117,9 @@ class NewTaskScreen extends StatefulWidget {
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context,index){
 
-                            TaskModel task=controller.taskList[index];
+                            List<TaskModel> reversedTaskList= controller.taskList.reversed.toList();
+
+                            TaskModel task=reversedTaskList[index];
 
                             return TaskCard(
                               task:task,

@@ -1,6 +1,9 @@
 
   import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:task_manager1/controllers/password_reset_controller.dart';
 import 'package:task_manager1/data/service/network_caller.dart';
 import 'package:task_manager1/data/urls/api_urls.dart';
 import 'package:task_manager1/ui/screens/sign_in_screen.dart';
@@ -30,6 +33,19 @@ class PassResetScreen extends StatefulWidget {
 
   class _PassResetScreenState extends State<PassResetScreen> {
 
+    final _passResetController=Get.find<PasswordResetController>();
+
+    final TextEditingController _passTEController=TextEditingController();
+    final TextEditingController _confirmPassTEController=TextEditingController();
+    final _formKey= GlobalKey<FormState>();
+
+    bool _obSecureText1=true;
+    bool _obSecureText2=true;
+
+
+    bool _passwordResetProgress=false;
+
+
 
 
   @override
@@ -46,18 +62,6 @@ class PassResetScreen extends StatefulWidget {
 
     super.initState();
   }
-
-
-  final TextEditingController _passTEController=TextEditingController();
-  final TextEditingController _confirmPassTEController=TextEditingController();
-  final _formKey= GlobalKey<FormState>();
-
-  bool _obSecureText1=true;
-  bool _obSecureText2=true;
-
-
-  bool _passwordResetProgress=false;
-
 
     @override
     Widget build(BuildContext context) {
@@ -124,14 +128,19 @@ class PassResetScreen extends StatefulWidget {
 
                       const SizedBox(height: 20,),
 
-                      Visibility(
-                        visible: _passwordResetProgress==false,
-                        replacement: CenteredCircularProgressIndicator(),
-                        child: ElevatedButton(
-                            onPressed: _passConfirm,
-                            child: Text("Confirm")
-                        ),
-                      ),
+                       GetBuilder<PasswordResetController>(
+                           builder: (controller){
+
+                             return Visibility(
+                               visible: controller.isChange==false,
+                               replacement: CenteredCircularProgressIndicator(),
+                               child: ElevatedButton(
+                                   onPressed: _passConfirm,
+                                   child: Text("Confirm")
+                               ),
+                             );
+                       }
+                       ),
 
                       const SizedBox(height: 25,),
 
@@ -168,48 +177,32 @@ class PassResetScreen extends StatefulWidget {
       });
   }
 
+
+
+  // method for change password
     void _passConfirm() async{
 
       if(_formKey.currentState!.validate()){
 
-        setState(() {
-          _passwordResetProgress=true;
-        });
 
-        Map<String,dynamic> passInfo={
-          "email":widget.email,
-          "OTP":widget.otp,
-          "password":_confirmPassTEController.text
-        };
+        bool success=await _passResetController.resetPassword(email: widget.email, otp: widget.otp, password: _confirmPassTEController.text);
 
-        NetworkResponse response=await NetworkCaller.postRequest(url: ApiUrls.passResetUrl,body: passInfo);
         if(!mounted){
-          return ;
+          return;
         }
 
-
-        setState(() {
-          _passwordResetProgress=false;
-        });
-
-        if(response.success){
-
-          final String  data=response.body?["data"];
-          if(mounted){
-            showSnackbarMesssage(context, data);
-          }
-
-
-          _confirmPassTEController.clear();
+        if(success){
           _passTEController.clear();
-
+          _confirmPassTEController.clear();
+          showSnackbarMesssage(context, _passResetController.successMessage!);
 
         }else{
-            if(mounted){
-              showSnackbarMesssage(context, response.errorMsg!);
-            }
+
+          showSnackbarMesssage(context, _passResetController.errorMessage!);
 
         }
+
+
 
 
 
@@ -221,7 +214,7 @@ class PassResetScreen extends StatefulWidget {
 
     void _tapSignIn(){
 
-      Navigator.pushNamedAndRemoveUntil(context, SignInScreen.name, (predicate)=>false);
+     Get.offAllNamed(SignInScreen.name);
 
     }
 

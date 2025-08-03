@@ -42,7 +42,12 @@ class ProgressTaskListScreen extends StatefulWidget {
               ),
               child:(controller.taskList.isEmpty) ? Center(child: Text("No Completed Task Found",style: TextTheme.of(context).titleMedium?.copyWith(fontSize: 20,color:Colors.red),))
                   : ListView.builder(itemBuilder: (context,index){
-                TaskModel task=controller.taskList[index];
+
+                List<TaskModel> reversedTaskList= controller.taskList.reversed.toList();
+
+                TaskModel task=reversedTaskList[index];
+
+
                 return TaskCard(
                   task: task,
                   taskType: TaskCategory.Progress,
