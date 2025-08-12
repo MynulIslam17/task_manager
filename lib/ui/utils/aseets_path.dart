@@ -1,6 +1,7 @@
 class AssetsPath {
 
   static const String _imagePath="assets/images";
+  static const String _animPath="assets/animations";
   static const String backgroundImage="$_imagePath/background.svg";
   static const String logo="$_imagePath/logo.svg";
   static const String  newTask="$_imagePath/newtask.png";
@@ -16,6 +17,8 @@ class AssetsPath {
   static const String userDefaultDp="$_imagePath/user.png";
   static const String  appNameImage="$_imagePath/appName.png";
   static const String  taskLogo="$_imagePath/taskLogo2.png";
+
+  static const String taskAnim="$_animPath/splash_anim.json";
 
 
 
