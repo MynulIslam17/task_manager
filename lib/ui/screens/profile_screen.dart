@@ -371,10 +371,13 @@ class ProfileScreen extends StatefulWidget {
 
         bool success=await _profileUpdateController.updateProfile(profileUpdateInfo,imageBytes);
 
-
+          if(!mounted){
+            return;
+          }
 
         if(success){ // if profile updated success
           _passwordTEController.clear();
+          showSnackbarMesssage(context, "profile update successfully");
 
         }else{
           if(mounted){

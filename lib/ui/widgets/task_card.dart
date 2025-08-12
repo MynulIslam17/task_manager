@@ -58,7 +58,7 @@ class _TaskCardState extends State<TaskCard> {
             const SizedBox(height: 3,),
             Text(widget.task.description),
             const SizedBox(height: 9,),
-            Text(widget.task.createDate),
+            Text(timeFormate(widget.task.createDate)),
 
             Row(
               children: [
@@ -392,8 +392,21 @@ class _TaskCardState extends State<TaskCard> {
         showSnackbarMesssage(context, response.errorMsg ?? "Delete failed.");
       }
 
-  } // this method for delete task
+  }
+  // this method for delete task
 
+
+   String  timeFormate(String time){
+
+    DateTime parseDate=DateTime.parse(time);
+    // Convert to local time and get string without milliseconds
+    String fullStringTime = parseDate.toLocal().toString().split('.').first;
+
+    String shortFormatedTime = fullStringTime.substring(0, 16);
+
+    return shortFormatedTime;
+
+   }
 
 
 }

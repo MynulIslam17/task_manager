@@ -155,7 +155,7 @@ class NewTaskScreen extends StatefulWidget {
         
         floatingActionButton: FloatingActionButton(
             onPressed: _addNewTaskBtn,
-          backgroundColor: Colors.green.shade400,
+          backgroundColor: Colors.blue,
             child: Icon(Icons.add,
               color: Colors.white,
             )
