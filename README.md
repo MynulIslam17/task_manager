@@ -1,16 +1,35 @@
 # task_manager1
 
-A new Flutter project.
+A Flutter-based **Task Management** application built with **GetX** for state management, featuring **JWT-based authentication** for secure login sessions.  
+Easily manage tasks with authentication, password reset, and profile management features.
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+![Login]([https://raw.githubusercontent.com/MynulIslam17/task_manager/main/assets/screenshots/login.png](https://github.com/MynulIslam17/task_manager/blob/850c123cda3210074a61c64e531b66cea4e78a18/Screenshot%20(239)-left.png)
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## ✨ Features
+
+- 🔑 **User Authentication** (JWT-based Login & Signup)
+- 🔒 **Secure Token Storage** for session management
+- 📧 **Forgot Password & Reset Password** functionality
+- 👤 **Profile Management** (view & update profile with image upload in Base64)
+- 📝 **Task Management** (create, update, delete tasks)
+- 📊 **Task Status Tracking** (new, in-progress, completed, cancelled)
+- 📱 **Responsive UI** with clean and modern design
+- ⚡ **GetX State Management** for smooth and reactive experience
+
+---
+
+## 🛠️ Tech Stack
+
+- **Flutter** (Frontend)
+- **GetX** (State Management)
+- **Dart** (Language)
+- **JWT** (Authentication)
+- **REST API** (Backend integration)
+
+---
+
+
